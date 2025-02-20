@@ -30,22 +30,34 @@ export default {
 		if (contentLength && parseInt(contentLength) > 0) {
 			oInputs = await request.json();
 		}
-
-		const sPrompt = `
-			בתור עורך דין מומחה עליך לענות על השאלה שלהלן בצורה קצרה וישירה תוך שימוש בטרמינולוגיה משפטית.
-			השאלה היא: ${oInputs.question}.
-			תשובתך תהיה מבוססת רק על הטקסט המשפטי שאותו תקבל בפרומפט הבא.
-		`;
-
 		const oOpenAi = new OpenAI({
 			apiKey: env.OPENAI_API_KEY,
 			baseURL: "https://gateway.ai.cloudflare.com/v1/1719b913db6cbf5b9e3267b924244e58/summarize-docs/openai"
 		});
 
+		const sPrompt = `
+		בפרומפט הבא תקבל טקסט משפטי שאמור להיות המקור הבלעדי בו תשתמש כדי לענות על השאלות שיופיעו לאחר מכן. 
+		התפקיד שלך הוא של מומחה משפטי מהמעלה הראשונה למשפט הישראלי. 
+		התשובות שלך צריכות להיות קצרות וישירות תוך שימוש בטרמינולןוגיה משפטית.
+		`;
+
 		const messagesForOpenAI = [
 			{ role: 'system', content: sPrompt.trim() },
 			{ role: 'user', content: oInputs.text }
 		];
+
+		const oChatData=oInputs.chatData;
+		if (oChatData && oChatData.arItems) {
+			for (const item of oChatData.arItems) {
+				if (item.role && item.content) {
+					messagesForOpenAI.push({
+						role: item.role,
+						content: item.content
+					});
+				}
+			}
+		}
+
 		const bufferThreshold = 10;
 		let buffer = "";
 		const encoder = new TextEncoder();
