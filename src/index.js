@@ -65,7 +65,7 @@ export default {
 			async start(controller) {
 				try {
 					const chatCompletion = await oOpenAi.chat.completions.create({
-						model: "gpt-4o-mini",
+						model: "gpt-4.1-mini",
 						messages: messagesForOpenAI,
 						temperature: 0,
 						presence_penalty: 0,
