@@ -10,6 +10,12 @@
 
 import OpenAI from "openai";
 
+// Define allowed origins
+const ALLOWED_ORIGINS = [
+	'https://lawdata.co.il',
+	'https://www.lawdata.co.il',
+];
+
 const corsHeaders = {
 	'Access-Control-Allow-Origin': '*',
 	'Access-Control-Allow-Methods': 'POST, OPTIONS',
@@ -19,10 +25,59 @@ const corsHeaders = {
 	'Connection': 'keep-alive'
 };
 
+function isOriginAllowed(origin) {
+	if (!origin) return false;
+	return ALLOWED_ORIGINS.includes(origin);
+}
+
 export default {
 	async fetch(request, env, ctx) {
+		// Check origin for ALL requests including OPTIONS
+		const origin = request.headers.get('Origin');
+		const referer = request.headers.get('Referer');
+		
+		// Check Origin header first (more reliable)
+		if (origin) {
+			if (!isOriginAllowed(origin)) {
+				return new Response('Forbidden: Invalid origin', { 
+					status: 403,
+					headers: { 'Content-Type': 'text/plain' }
+				});
+			}
+		}
+		// Fallback to Referer header if Origin is not present
+		else if (referer) {
+			try {
+				const refererUrl = new URL(referer);
+				const refererOrigin = `${refererUrl.protocol}//${refererUrl.hostname}`;
+				if (!isOriginAllowed(refererOrigin)) {
+					return new Response('Forbidden: Invalid referer', { 
+						status: 403,
+						headers: { 'Content-Type': 'text/plain' }
+					});
+				}
+			} catch (e) {
+				return new Response('Forbidden: Invalid referer format', { 
+					status: 403,
+					headers: { 'Content-Type': 'text/plain' }
+				});
+			}
+		}
+		// No origin or referer header
+		else {
+			return new Response('Forbidden: No origin or referer header', { 
+				status: 403,
+				headers: { 'Content-Type': 'text/plain' }
+			});
+		}
+
 		if (request.method === 'OPTIONS') {
-			return new Response(null, { headers: corsHeaders });
+			return new Response(null, { 
+				headers: {
+					...corsHeaders,
+					'Access-Control-Allow-Origin': origin || referer ? `${new URL(referer).protocol}//${new URL(referer).hostname}` : ALLOWED_ORIGINS[0]
+				}
+			});
 		}
 
 		let oInputs = { text: "" };
