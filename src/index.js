@@ -165,7 +165,7 @@ export default {
 		const sPrompt = `
 		בפרומפט הבא תקבל טקסט משפטי שאמור להיות המקור הבלעדי בו תשתמש כדי לענות על השאלות שיופיעו לאחר מכן. 
 		התפקיד שלך הוא של מומחה משפטי מהמעלה הראשונה למשפט הישראלי. 
-		התשובות שלך צריכות להיות קצרות (עד 1000 מילים ולא יותר) וישירות תוך שימוש בטרמינולוגיה משפטית.
+		התשובות שלך צריכות להיות קצרות וישירות תוך שימוש בטרמינולוגיה משפטית.
 		`;
 
 		const messagesForOpenAI = [
@@ -195,6 +195,7 @@ export default {
 						model: "gpt-4.1-mini",
 						messages: messagesForOpenAI,
 						temperature: 0,
+						max_tokens:5000,
 						presence_penalty: 0,
 						frequency_penalty: 0,
 						stream: true
