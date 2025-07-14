@@ -196,6 +196,7 @@ export default {
 						messages: messagesForOpenAI,
 						temperature: 0,
 						max_tokens:5000,
+						top_p: 1,
 						presence_penalty: 0,
 						frequency_penalty: 0,
 						stream: true
